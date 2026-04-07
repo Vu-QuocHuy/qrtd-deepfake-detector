@@ -1,5 +1,5 @@
 experiment_name: expA_anti_compression
-output_dir: outputs_exp/qrtd/expA
+output_dir: H:/deepfake_data/outputs_duong_huy/qrtd/expA
 seed: 42
 epochs: 33
 batch_size: 4
@@ -15,7 +15,21 @@ contrastive_enabled: false
 reliability_enabled: false
 early_stopping_patience: 5
 early_stopping_min_delta: 0.001
-train_real: []
-train_fake: []
-val_real: []
-val_fake: []
+train_real:
+  - D:/duong_huy_ct7/deepfake-data/train/original
+train_fake:
+  - D:/duong_huy_ct7/deepfake-data/train/DeepFakeDetection
+  - D:/duong_huy_ct7/deepfake-data/train/Deepfakes
+  - D:/duong_huy_ct7/deepfake-data/train/Face2Face
+  - D:/duong_huy_ct7/deepfake-data/train/FaceShifter
+  - D:/duong_huy_ct7/deepfake-data/train/FaceSwap
+  - D:/duong_huy_ct7/deepfake-data/train/NeuralTextures
+val_real:
+  - D:/duong_huy_ct7/deepfake-data/val/original
+val_fake:
+  - D:/duong_huy_ct7/deepfake-data/val/DeepFakeDetection
+  - D:/duong_huy_ct7/deepfake-data/val/Deepfakes
+  - D:/duong_huy_ct7/deepfake-data/val/Face2Face
+  - D:/duong_huy_ct7/deepfake-data/val/FaceShifter
+  - D:/duong_huy_ct7/deepfake-data/val/FaceSwap
+  - D:/duong_huy_ct7/deepfake-data/val/NeuralTextures
