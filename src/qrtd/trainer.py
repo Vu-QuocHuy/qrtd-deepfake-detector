@@ -24,6 +24,8 @@ class QRTDTrainer:
             pretrained=cfg.pretrained,
             reliability_enabled=cfg.reliability_enabled,
             frame_chunk_size=cfg.frame_chunk_size,
+            grad_checkpoint=cfg.grad_checkpoint,
+            grad_ckpt_segments=cfg.grad_ckpt_segments,
         ).to(self.device)
         self.criterion = nn.BCEWithLogitsLoss()
         self.optimizer = torch.optim.AdamW(
@@ -124,7 +126,10 @@ class QRTDTrainer:
         print(f"[QRTD] anti_compression={self.cfg.anti_compression}")
         print(f"[QRTD] contrastive_enabled={self.cfg.contrastive_enabled}")
         print(f"[QRTD] reliability_enabled={self.cfg.reliability_enabled}")
-        print(f"[QRTD] use_amp={self.use_amp} frame_chunk_size={self.cfg.frame_chunk_size}")
+        print(
+            f"[QRTD] use_amp={self.use_amp} frame_chunk_size={self.cfg.frame_chunk_size} "
+            f"grad_checkpoint={self.cfg.grad_checkpoint} segments={self.cfg.grad_ckpt_segments}"
+        )
 
         for epoch in range(1, self.cfg.epochs + 1):
             print(f"\nEpoch {epoch}/{self.cfg.epochs}")

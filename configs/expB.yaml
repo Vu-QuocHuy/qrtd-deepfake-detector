@@ -2,19 +2,21 @@ experiment_name: expB_anti_compression_plus_contrastive
 output_dir: H:/deepfake_data/outputs_duong_huy/qrtd/expB
 seed: 42
 epochs: 33
-batch_size: 4
+batch_size: 2
 num_workers: 0
 learning_rate: 0.0002
 weight_decay: 0.0001
 n_frames: 16
-image_size: 380
+image_size: 300
 model_name: efficientnet-b4
 pretrained: true
 anti_compression: true
 contrastive_enabled: true
 reliability_enabled: false
 use_amp: true
-frame_chunk_size: 4
+frame_chunk_size: 1
+grad_checkpoint: true
+grad_ckpt_segments: 4
 early_stopping_patience: 5
 early_stopping_min_delta: 0.001
 train_real:

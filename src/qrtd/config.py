@@ -26,6 +26,8 @@ class TrainConfig:
     reliability_enabled: bool
     use_amp: bool
     frame_chunk_size: int
+    grad_checkpoint: bool
+    grad_ckpt_segments: int
     early_stopping_patience: int
     early_stopping_min_delta: float
     train_real: list[str]
