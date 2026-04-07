@@ -1,0 +1,13 @@
+experiment_name: expC_anti_compression_contrastive_reliability
+output_dir: outputs_exp/qrtd/expC
+seed: 42
+epochs: 33
+batch_size: 4
+num_workers: 0
+learning_rate: 0.0002
+weight_decay: 0.0001
+n_frames: 16
+image_size: 380
+anti_compression: true
+contrastive_enabled: true
+reliability_enabled: true
