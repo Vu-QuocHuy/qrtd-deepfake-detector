@@ -27,11 +27,18 @@ Run from repository root:
 
 ```bash
 python qrtd/scripts/train_qrtd.py --config qrtd/configs/expA.yaml
-python qrtd/scripts/test_qrtd.py --checkpoint /path/to/model.pth --config qrtd/configs/expA.yaml
+python qrtd/scripts/test_qrtd.py --checkpoint /path/to/best.pth --config qrtd/configs/expA.yaml
+```
+
+For a standalone repository layout (where `scripts/` and `configs/` are at root), use:
+
+```bash
+python scripts/train_qrtd.py --config configs/expA.yaml
+python scripts/test_qrtd.py --checkpoint /path/to/best.pth --config configs/expA.yaml
 ```
 
 ## Notes
 
-- Current code is a clean scaffold with deterministic structure and APIs.
+- Current code includes a working train/val loop with EfficientNet-B4.
+- Input data must be extracted face frames grouped by video id via filename.
 - It does not depend on legacy model classes.
-- Team can implement modules incrementally without touching old code paths.

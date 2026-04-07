@@ -1,2 +1,6 @@
 torch
+torchvision
 pyyaml
+numpy
+tqdm
+Pillow

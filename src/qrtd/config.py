@@ -19,9 +19,15 @@ class TrainConfig:
     weight_decay: float
     n_frames: int
     image_size: int
+    model_name: str
+    pretrained: bool
     anti_compression: bool
     contrastive_enabled: bool
     reliability_enabled: bool
+    train_real: list[str]
+    train_fake: list[str]
+    val_real: list[str]
+    val_fake: list[str]
 
 
 def load_train_config(path: str | Path) -> TrainConfig:
