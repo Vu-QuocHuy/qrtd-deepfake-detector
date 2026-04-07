@@ -23,6 +23,7 @@ class QRTDTrainer:
             model_name=cfg.model_name,
             pretrained=cfg.pretrained,
             reliability_enabled=cfg.reliability_enabled,
+            frame_chunk_size=cfg.frame_chunk_size,
         ).to(self.device)
         self.criterion = nn.BCEWithLogitsLoss()
         self.optimizer = torch.optim.AdamW(
@@ -31,6 +32,8 @@ class QRTDTrainer:
             weight_decay=cfg.weight_decay,
         )
         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=cfg.epochs)
+        self.use_amp = bool(cfg.use_amp and self.device.type == "cuda")
+        self.scaler = torch.amp.GradScaler("cuda", enabled=self.use_amp)
         self.best_val_acc = -1.0
         self.no_improve_count = 0
         self.out = Path(self.cfg.output_dir)
@@ -75,13 +78,15 @@ class QRTDTrainer:
             labels = labels.to(self.device, non_blocking=True)
 
             with torch.set_grad_enabled(train):
-                out = self.model(seqs)
-                logits = out["logits"]
-                loss = self.criterion(logits, labels)
+                with torch.amp.autocast(device_type=self.device.type, enabled=self.use_amp):
+                    out = self.model(seqs)
+                    logits = out["logits"]
+                    loss = self.criterion(logits, labels)
                 if train:
                     self.optimizer.zero_grad(set_to_none=True)
-                    loss.backward()
-                    self.optimizer.step()
+                    self.scaler.scale(loss).backward()
+                    self.scaler.step(self.optimizer)
+                    self.scaler.update()
 
             probs = torch.sigmoid(logits)
             preds = (probs >= 0.5).float()
@@ -119,6 +124,7 @@ class QRTDTrainer:
         print(f"[QRTD] anti_compression={self.cfg.anti_compression}")
         print(f"[QRTD] contrastive_enabled={self.cfg.contrastive_enabled}")
         print(f"[QRTD] reliability_enabled={self.cfg.reliability_enabled}")
+        print(f"[QRTD] use_amp={self.use_amp} frame_chunk_size={self.cfg.frame_chunk_size}")
 
         for epoch in range(1, self.cfg.epochs + 1):
             print(f"\nEpoch {epoch}/{self.cfg.epochs}")

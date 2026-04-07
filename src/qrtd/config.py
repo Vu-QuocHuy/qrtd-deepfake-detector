@@ -24,6 +24,8 @@ class TrainConfig:
     anti_compression: bool
     contrastive_enabled: bool
     reliability_enabled: bool
+    use_amp: bool
+    frame_chunk_size: int
     early_stopping_patience: int
     early_stopping_min_delta: float
     train_real: list[str]

@@ -13,6 +13,8 @@ pretrained: true
 anti_compression: true
 contrastive_enabled: false
 reliability_enabled: false
+use_amp: true
+frame_chunk_size: 4
 early_stopping_patience: 5
 early_stopping_min_delta: 0.001
 train_real:
