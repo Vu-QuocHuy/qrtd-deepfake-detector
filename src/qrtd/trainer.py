@@ -32,6 +32,7 @@ class QRTDTrainer:
         )
         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=cfg.epochs)
         self.best_val_acc = -1.0
+        self.no_improve_count = 0
         self.out = Path(self.cfg.output_dir)
         self.ckpt_dir = self.out / "checkpoints"
         self.out.mkdir(parents=True, exist_ok=True)
@@ -129,12 +130,23 @@ class QRTDTrainer:
                 f.write(f"{epoch},{train_loss:.6f},{train_acc:.6f},{val_loss:.6f},{val_acc:.6f}\n")
 
             self._save_checkpoint(name=f"epoch_{epoch:03d}.pth", epoch=epoch, val_acc=val_acc)
-            if val_acc > self.best_val_acc:
+            improved = val_acc > (self.best_val_acc + self.cfg.early_stopping_min_delta)
+            if improved:
                 self.best_val_acc = val_acc
+                self.no_improve_count = 0
                 self._save_checkpoint(name="best.pth", epoch=epoch, val_acc=val_acc)
                 print(f"[QRTD] New best val_acc={val_acc:.4f}")
+            else:
+                self.no_improve_count += 1
 
             print(
                 f"[QRTD] train_loss={train_loss:.4f} train_acc={train_acc:.4f} "
                 f"val_loss={val_loss:.4f} val_acc={val_acc:.4f}"
             )
+            if self.no_improve_count >= self.cfg.early_stopping_patience:
+                print(
+                    "[QRTD] Early stopping triggered: "
+                    f"no val_acc improvement >= {self.cfg.early_stopping_min_delta} "
+                    f"for {self.cfg.early_stopping_patience} epochs."
+                )
+                break

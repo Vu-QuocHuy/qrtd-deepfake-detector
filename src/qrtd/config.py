@@ -24,6 +24,8 @@ class TrainConfig:
     anti_compression: bool
     contrastive_enabled: bool
     reliability_enabled: bool
+    early_stopping_patience: int
+    early_stopping_min_delta: float
     train_real: list[str]
     train_fake: list[str]
     val_real: list[str]

@@ -13,6 +13,8 @@ pretrained: true
 anti_compression: true
 contrastive_enabled: true
 reliability_enabled: true
+early_stopping_patience: 5
+early_stopping_min_delta: 0.001
 train_real: []
 train_fake: []
 val_real: []
