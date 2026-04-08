@@ -44,6 +44,40 @@ class QRTDTrainer:
         self.ckpt_dir.mkdir(parents=True, exist_ok=True)
 
     @staticmethod
+    def _supervised_contrastive_loss(
+        z: torch.Tensor,
+        labels: torch.Tensor,
+        temperature: float,
+    ) -> torch.Tensor:
+        """
+        Supervised contrastive loss on batch-level embeddings.
+        z: [B, D], labels: [B] in {0,1}
+        """
+        if z.size(0) < 2:
+            return torch.zeros((), device=z.device, dtype=z.dtype)
+
+        z = nn.functional.normalize(z, dim=1)
+        logits = torch.matmul(z, z.T) / max(temperature, 1e-6)  # [B, B]
+        logits = logits - torch.max(logits, dim=1, keepdim=True).values
+
+        labels = labels.view(-1)
+        pos_mask = (labels.unsqueeze(0) == labels.unsqueeze(1)).to(z.dtype)
+        eye = torch.eye(z.size(0), device=z.device, dtype=z.dtype)
+        pos_mask = pos_mask - eye
+
+        exp_logits = torch.exp(logits) * (1.0 - eye)
+        log_prob = logits - torch.log(exp_logits.sum(dim=1, keepdim=True).clamp_min(1e-12))
+
+        pos_count = pos_mask.sum(dim=1)
+        valid = pos_count > 0
+        if not torch.any(valid):
+            return torch.zeros((), device=z.device, dtype=z.dtype)
+
+        mean_log_prob_pos = (pos_mask * log_prob).sum(dim=1) / pos_count.clamp_min(1.0)
+        loss = -mean_log_prob_pos[valid].mean()
+        return loss
+
+    @staticmethod
     def _set_seed(seed: int) -> None:
         random.seed(seed)
         np.random.seed(seed)
@@ -83,7 +117,15 @@ class QRTDTrainer:
                 with torch.amp.autocast(device_type=self.device.type, enabled=self.use_amp):
                     out = self.model(seqs)
                     logits = out["logits"]
-                    loss = self.criterion(logits, labels)
+                    cls_loss = self.criterion(logits, labels)
+                    loss = cls_loss
+                    if self.cfg.contrastive_enabled:
+                        ctr_loss = self._supervised_contrastive_loss(
+                            out["projection"],
+                            labels,
+                            temperature=self.cfg.contrastive_temperature,
+                        )
+                        loss = loss + self.cfg.contrastive_weight * ctr_loss
                 if train:
                     self.optimizer.zero_grad(set_to_none=True)
                     self.scaler.scale(loss).backward()
@@ -125,6 +167,11 @@ class QRTDTrainer:
         print(f"[QRTD] Device: {self.device}")
         print(f"[QRTD] anti_compression={self.cfg.anti_compression}")
         print(f"[QRTD] contrastive_enabled={self.cfg.contrastive_enabled}")
+        if self.cfg.contrastive_enabled:
+            print(
+                f"[QRTD] contrastive_weight={self.cfg.contrastive_weight} "
+                f"contrastive_temperature={self.cfg.contrastive_temperature}"
+            )
         print(f"[QRTD] reliability_enabled={self.cfg.reliability_enabled}")
         print(
             f"[QRTD] use_amp={self.use_amp} frame_chunk_size={self.cfg.frame_chunk_size} "

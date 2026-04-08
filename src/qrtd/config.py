@@ -23,6 +23,8 @@ class TrainConfig:
     pretrained: bool
     anti_compression: bool
     contrastive_enabled: bool
+    contrastive_weight: float
+    contrastive_temperature: float
     reliability_enabled: bool
     use_amp: bool
     frame_chunk_size: int
