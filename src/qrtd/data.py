@@ -186,3 +186,26 @@ def build_dataloaders(
         drop_last=False,
     )
     return {"train": train_loader, "val": val_loader}
+
+
+def build_test_loader(
+    test_real: list[str],
+    test_fake: list[str],
+    n_frames: int,
+    image_size: int,
+    batch_size: int,
+    num_workers: int,
+) -> DataLoader:
+    _, val_tfm = build_transforms(image_size=image_size, anti_compression=False)
+    test_real_ds = SequenceDataset(test_real, label=1, n_frames=n_frames, transform=val_tfm, random_sampling=False)
+    test_fake_ds = SequenceDataset(test_fake, label=0, n_frames=n_frames, transform=val_tfm, random_sampling=False)
+    test_ds = ConcatDataset(test_real_ds, test_fake_ds)
+    pin = torch.cuda.is_available()
+    return DataLoader(
+        test_ds,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=pin,
+        drop_last=False,
+    )
